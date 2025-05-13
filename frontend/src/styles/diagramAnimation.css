@@ -1,0 +1,13 @@
+@keyframes flowAnimation {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animated-connection {
+  animation: flowAnimation 1s linear infinite;
+  stroke-dasharray: 12 12;
+}
