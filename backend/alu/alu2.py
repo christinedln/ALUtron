@@ -1,22 +1,15 @@
-from flask import Flask, request, jsonify
+def calculate_alu2(data):
+    def valid_binary_check(s):   # checks if string is 4-digit and just 0,1
+        return isinstance(s, str) and len(s) == 4 and all(c in '01' for c in s)
 
-app = Flask(__name__)
+    def valid_select_check(s):  # check is now for 2 or 3-digit binary
+        return isinstance(s, str) and 2 <= len(s) <= 3 and all(c in '01' for c in s)
 
-def valid_binary_check(s):  # checks if string is 4-digit and just 0,1
-    return isinstance(s, str) and len(s) == 4 and all(c in '01' for c in s)
+    def binary_to_list(binary_str):                      #  this and
+        return [int(bit) for bit in binary_str]
 
-def valid_select_check(s):  # same as above but 2-digit
-    return isinstance(s, str) and len(s) == 2 and all(c in '01' for c in s)
-
-def binary_to_list(binary_str):
-    return [int(bit) for bit in binary_str]       #  this and
-
-def list_to_binary(bit_list):
-    return ''.join(str(bit) for bit in bit_list)  # this converts bits "1010" to [1,0,1,0] for operation to "1010" after operation  
-
-@app.route('/alu/circuit2', methods=['POST'])
-def circuit2_operation():
-    data = request.get_json()
+    def list_to_binary(bit_list):
+        return ''.join(str(bit) for bit in bit_list)    # this converts bits "1010" to [1,0,1,0] for operation to "1010" after operation  
 
     a_str = data.get("a", "")
     b_str = data.get("b", "")
@@ -24,56 +17,70 @@ def circuit2_operation():
     select_str = data.get("select", "")
 
     if not valid_binary_check(a_str):
-        return jsonify({"error": "Input 'a' must be a 4-digit binary string"}), 400
-    
+        return {"error": "Input 'a' must be a 4-digit binary string"}
+
     if not valid_binary_check(b_str):
-        return jsonify({"error": "Input 'b' must be a 4-digit binary string"}), 400
+        return {"error": "Input 'b' must be a 4-digit binary string"}
 
     if not valid_select_check(select_str):
-        return jsonify({"error": "Input 'select' must be a 2-digit binary string"}), 400
+        return {"error": "Input 'select' must be a 2-digit binary string"}
 
     try:
         carry_in = int(carry_in)
     except ValueError:
-        return jsonify({"error": "'carry_in' must be int"}), 400
+        return {"error": "'carry_in' must be an integer"}
 
     if carry_in not in (0, 1):
-        return jsonify({"error": "'carry_in' must be 0 or 1"}), 400
+        return {"error": "'carry_in' must be 0 or 1"}
 
-    operation = int(select_str, 2) # convert op from str to int
+    operation = int(select_str, 2)
 
-    if operation not in (0, 1, 2):
-        return jsonify({"error": "'select' must be 0, 1, or 2"}), 400
+    if operation not in (0, 1, 2, 3, 4):
+        return {"error": "'select' must be 00 (AND), 01 (OR), 10 (ADD), 11 (SUB), 100 (NOT)"}
 
     input_a = binary_to_list(a_str)
     input_b = binary_to_list(b_str)
-
     result = [0] * 4
     carry_out = 0
 
-    if operation == 0: # AND op
-        result = [bit1 & bit2 for bit1, bit2 in zip(input_a, input_b)] # this turns 2 inputs into 1 output like [1,0,1,0] & [1,1,0,0] = [(1,1), (0,1), (1,0), (0,0)] then evaluates
+    if operation == 0:  # AND op
+        result = [a & b for a, b in zip(input_a, input_b)]
 
-    elif operation == 1: # 0R op
-        result = [bit1 | bit2 for bit1, bit2 in zip(input_a, input_b)] # same but only need one 1 to be 1 during eval 
+    elif operation == 1:  # OR op
+        result = [a | b for a, b in zip(input_a, input_b)]
 
-    elif operation == 2: # ADD op + carry
+    elif operation == 2:  # ADD with carry op
         carry = carry_in
-        for i in reversed(range(4)): # addition starting from rightmost bit
-            bit1 = input_a[i]
-            bit2 = input_b[i]
-
-            sum_bit = bit1 ^ bit2 ^ carry
-            carry = (bit1 & bit2) | (carry & (bit1 ^ bit2))
-
+        for i in reversed(range(4)):
+            a = input_a[i]
+            b = input_b[i]
+            sum_bit = a ^ b ^ carry
+            carry = (a & b) | (carry & (a ^ b))
             result[i] = sum_bit
-
         carry_out = carry
 
-    return jsonify({
-        "result": list_to_binary(result),
-        "carry_out": carry_out if operation == 2 else None
-    })
+    elif operation == 3:  # SUB op (a - b = a + (inverted b + 1))
+        b_inverted = [1 - b for b in input_b] 
+        carry_in = 1 
+        result = [0] * 4
+        for i in reversed(range(4)):
+            a_bit = input_a[i]
+            b_bit = b_inverted[i]
+            sum_bit = a_bit ^ b_bit ^ carry_in
+            carry_out = (a_bit & b_bit) | (carry_in & (a_bit ^ b_bit))
+            result[i] = sum_bit
+            carry_in = carry_out
+        carry_out = carry_in  
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
+    elif operation == 4:  # NOT op
+        result = [1 - a for a in input_a]
+        carry_out = None  
+    
+    else:
+        return {"error": "Invalid 'select' code. Allowed are: 000 (AND), 001 (OR), 010 (ADD), 011 (SUB), 100 (NOT)"}
+    
+    return {
+        "result": list_to_binary(result),
+        "carry_out": carry_out if operation in (2, 3) else None  
+    }
