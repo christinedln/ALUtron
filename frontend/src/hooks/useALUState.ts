@@ -55,18 +55,21 @@ export function useALUState(
         for (let i = 0; i < 4; i++) {
           result[i] = aInputs[i] & bInputs[i];
         }
+        console.log("Updating in AND", result);
         break;
 
       case 1:
         for (let i = 0; i < 4; i++) {
           result[i] = aInputs[i] | bInputs[i];
         }
+        console.log("Updating in OR", result);
         break;
 
       case 2:
         for (let i = 0; i < 4; i++) {
           result[i] = aInputs[i] === 0 ? 1 : 0;
         }
+        console.log("Updating in NOT", result);
         break;
 
       case 3: {
@@ -85,6 +88,7 @@ export function useALUState(
         }
 
         carryOutValue = carry;
+        console.log("Updating in ADD", result);
         break;
       }
     }

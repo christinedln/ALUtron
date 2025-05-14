@@ -12,6 +12,7 @@ const ORGateNode: React.FC<{ data: NodeData }> = () => (
             <stop offset="100%" stopColor="#6D28D9" />
           </linearGradient>
         </defs>
+        
         <path
           d="M 30 12 Q 62 50 30 88 C 104 88 148 73 150 50 C 150 27 104 12 30 12 Z"
           fill="url(#orGradient)"

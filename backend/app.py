@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from alu.alu1 import calculate_alu1
 
+
 app = Flask(__name__, template_folder='../frontend/templates', static_folder='../frontend/static')
 
 @app.route('/')
