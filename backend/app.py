@@ -1,8 +1,10 @@
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 from alu.alu1 import calculate_alu1
 from alu.alu2 import calculate_alu2
 
 app = Flask(__name__, template_folder='../frontend/templates', static_folder='../frontend/static')
+CORS(app)
 
 @app.route('/')
 def index():
