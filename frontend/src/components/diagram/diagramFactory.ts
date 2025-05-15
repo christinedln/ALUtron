@@ -152,15 +152,6 @@ export function createNodes(state: {
       data: {},
     },
     {
-      id: "half-adder",
-      type: "halfAdder",
-      position: {
-        x: columns.gates,
-        y: rows.gatesStart + 2 * rows.gatesSpacing + 70,
-      },
-      data: {},
-    },
-    {
       id: "full-adder",
       type: "fullAdder",
       position: {
