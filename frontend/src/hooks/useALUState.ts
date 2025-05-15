@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { ALUSimulatorProps } from "../types";
 
 export function useALUState(
@@ -6,6 +6,10 @@ export function useALUState(
 ) {
   const [aInputs, setAInputs] = useState<number[]>([0, 0, 0, 0]);
   const [bInputs, setBInputs] = useState<number[]>([0, 0, 0, 0]);
+
+  const [fullA, setA] = useState<string>('');
+  const [fullB, setB] = useState<string>('');
+
   const [carryIn, setCarryIn] = useState<number>(0);
   const [code, setCode] = useState<number[]>([0, 0]);
   const [subtractMode, setSubtractMode] = useState<number>(0);
@@ -46,27 +50,71 @@ export function useALUState(
 
   const calculateOutput = useCallback(() => {
     const result: number[] = [0, 0, 0, 0];
+    let completeResultA: string = '';
+    let completeResultB: string = '';
     let carryOutValue: number = 0;
+    const fullA = aInputs.join('');
+    const fullB = bInputs.join('');
+    const select = code.join('');
 
+    fetch("http://127.0.0.1:5000/calculate/circuit2", { // paltan port depende san magrun back
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        a: fullA,
+        b: fullB,
+        select: select,
+        carry_in: carryIn,
+        subtract_mode: subtractMode
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Backend ddebug:", data);
+    
+      setOutput(data.output.split("")); // output
+      setCarryOut(data.carry_out);
+
+      if (onResultChange) {
+        onResultChange({
+          output: data.output,
+          carry_out: data.carry_out,
+        });
+      }
+    })
+    .catch((err) => console.error("Error:", err));
     const operation: number = (code[0] << 1) | code[1];
 
+    
     switch (operation) {
       case 0:
         for (let i = 0; i < 4; i++) {
           result[i] = aInputs[i] & bInputs[i];
         }
+        for (let i = 0; i < 4; i++) {
+          completeResultB = '' + completeResultB + bInputs[i];
+          completeResultA = '' + completeResultA + aInputs[i];
+        }
+
+        console.log("Updating in AND", result);
+        console.log("Updating in AND", completeResultA);
+        console.log("Updating in AND", completeResultB);
         break;
 
       case 1:
         for (let i = 0; i < 4; i++) {
           result[i] = aInputs[i] | bInputs[i];
         }
+        console.log("Updating in OR", result);
         break;
 
       case 2:
         for (let i = 0; i < 4; i++) {
           result[i] = aInputs[i] === 0 ? 1 : 0;
         }
+        console.log("Updating in NOT", result);
         break;
 
       case 3: {
@@ -85,18 +133,9 @@ export function useALUState(
         }
 
         carryOutValue = carry;
+        console.log("Updating in ADD", result);
         break;
       }
-    }
-
-    setOutput(result.map(String));
-    setCarryOut(String(carryOutValue));
-
-    if (onResultChange) {
-      onResultChange({
-        output: result.map(String),
-        carry_out: String(carryOutValue),
-      });
     }
   }, [aInputs, bInputs, carryIn, code, subtractMode, onResultChange]);
 

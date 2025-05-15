@@ -47,6 +47,7 @@ const Diagram: React.FC<ALUSimulatorProps> = ({ onResultChange }) => {
     () => ({
       animated: true,
       style: {
+        
         strokeWidth: 2,
         stroke: "#64748b",
       },
@@ -58,12 +59,15 @@ const Diagram: React.FC<ALUSimulatorProps> = ({ onResultChange }) => {
   // 2. Effect to mark we need updates when inputs change
   useEffect(() => {
     setNeedsUpdate(true);
+    console.log("Updating",aluState);
   }, [
     aluState.aInputs,
     aluState.bInputs,
     aluState.carryIn,
     aluState.code,
     aluState.subtractMode,
+    aluState.output.join(""), 
+    aluState.carryOut
   ]);
 
   // 3. Separate effect to perform the actual update
@@ -72,6 +76,7 @@ const Diagram: React.FC<ALUSimulatorProps> = ({ onResultChange }) => {
 
     // Calculate output
     aluState.calculateOutput();
+    
 
     // Update nodes and edges based on new state
     setNodes(createNodes(aluState));
@@ -79,7 +84,7 @@ const Diagram: React.FC<ALUSimulatorProps> = ({ onResultChange }) => {
 
     // Mark update as complete
     setNeedsUpdate(false);
-  }, [needsUpdate, aluState, setNodes, setEdges]);
+  }, [needsUpdate, aluState, setNodes, setEdges, aluState.output.join("")]);
 
   return (
     <div className="flex flex-col h-screen font-poppins">
