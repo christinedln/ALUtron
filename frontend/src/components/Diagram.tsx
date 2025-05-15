@@ -32,7 +32,7 @@ const Diagram: React.FC<ALUSimulatorProps> = ({ onResultChange }) => {
     })
   );
 
-  const initialEdgesRef = useRef(createEdges());
+  const initialEdgesRef = useRef(createEdges(aluState)); // Pass aluState to createEdges
 
   // Initialize nodes and edges with ref values
   const [nodes, setNodes, onNodesChange] = useNodesState(
@@ -47,7 +47,6 @@ const Diagram: React.FC<ALUSimulatorProps> = ({ onResultChange }) => {
     () => ({
       animated: true,
       style: {
-        
         strokeWidth: 2,
         stroke: "#64748b",
       },
@@ -59,15 +58,15 @@ const Diagram: React.FC<ALUSimulatorProps> = ({ onResultChange }) => {
   // 2. Effect to mark we need updates when inputs change
   useEffect(() => {
     setNeedsUpdate(true);
-    console.log("Updating",aluState);
+    console.log("Updating", aluState);
   }, [
     aluState.aInputs,
     aluState.bInputs,
     aluState.carryIn,
     aluState.code,
     aluState.subtractMode,
-    aluState.output.join(""), 
-    aluState.carryOut
+    aluState.output.join(""),
+    aluState.carryOut,
   ]);
 
   // 3. Separate effect to perform the actual update
@@ -76,15 +75,14 @@ const Diagram: React.FC<ALUSimulatorProps> = ({ onResultChange }) => {
 
     // Calculate output
     aluState.calculateOutput();
-    
 
     // Update nodes and edges based on new state
     setNodes(createNodes(aluState));
-    setEdges(createEdges());
+    setEdges(createEdges(aluState)); // Pass aluState to createEdges
 
     // Mark update as complete
     setNeedsUpdate(false);
-  }, [needsUpdate, aluState, setNodes, setEdges, aluState.output.join("")]);
+  }, [needsUpdate, aluState, setNodes, setEdges]);
 
   return (
     <div className="flex flex-col h-screen font-poppins">
