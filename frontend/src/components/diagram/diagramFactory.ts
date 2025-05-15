@@ -146,7 +146,17 @@ export function createNodes(state: {
       type: "inverter",
       position: {
         x: columns.gates,
-        y: rows.gatesStart + 3 * rows.gatesSpacing + 70,
+        y: rows.gatesStart + 3 * rows.gatesSpacing + 
+        offsets.and + offsets.or + offsets.not,
+      },
+      data: {},
+    },
+    {
+      id: "half-adder",
+      type: "halfAdder",
+      position: {
+        x: columns.gates,
+        y: rows.gatesStart + 2 * rows.gatesSpacing + 70,
       },
       data: {},
     },
@@ -182,160 +192,98 @@ export function createNodes(state: {
   ];
 }
 
-export function createEdges(): Edge[] {
+function getEdgeColor(state: {
+  aInputs: number[];
+  bInputs: number[];
+  carryIn: number;
+  code: number[];
+  subtractMode: number;
+}) {
+  const { aInputs, bInputs, carryIn, subtractMode, code } = state;
+
+  // Determine colors based on inputs
+  const aColor = aInputs.some((bit) => bit === 1) ? "blue" : "gray"; // Blue if any A input is 1
+  const bColor = bInputs.some((bit) => bit === 1) ? "green" : "gray"; // Green if any B input is 1
+  const carryColor = carryIn === 1 ? "yellow" : "gray"; // Yellow if carry in is 1
+  const subtractColor = subtractMode === 1 ? "red" : "gray"; // Red if subtract mode is active
+
+  // Determine selector color based on code
+  let selectorColor = "gray"; // Default color
+  if (code[0] === 0 && code[1] === 0) {
+    selectorColor = "darkblue";
+  } else if (code[0] === 0 && code[1] === 1) {
+    selectorColor = "violet";
+  } else if (code[0] === 1 && code[1] === 0) {
+    selectorColor = "lightblue";
+  } else if (code[0] === 1 && code[1] === 1) {
+    selectorColor = subtractMode === 0 ? "lightgreen" : "lightcoral";
+  }
+
+  return {
+    aColor,
+    bColor,
+    carryColor,
+    subtractColor,
+    selectorColor,
+  };
+}
+
+export function createEdges(state: {
+  aInputs: number[];
+  bInputs: number[];
+  carryIn: number;
+  code: number[];
+  subtractMode: number;
+}): Edge[] {
+  const colors = getEdgeColor(state);
+
+  const createEdge = (
+    id: string,
+    source: string,
+    target: string,
+    targetHandle: string | null,
+    stroke: string
+  ): Edge => ({
+    id,
+    source,
+    target,
+    targetHandle: targetHandle || undefined,
+    animated: true,
+    type: "smoothstep",
+    markerEnd: { type: MarkerType.ArrowClosed },
+    style: {
+      stroke,
+      strokeWidth: 2,
+    },
+  });
+
   return [
     // Control connections
-    {
-      id: "select-to-mux",
-      source: "selector",
-      target: "multiplexer",
-      targetHandle: "select",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
-    {
-      id: "sub-to-inverter",
-      source: "sub-op",
-      target: "inverter",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
+    createEdge("select-to-mux", "selector", "multiplexer", "select", colors.selectorColor),
+    createEdge("sub-to-inverter", "sub-op", "inverter", null, colors.subtractColor),
 
     // Input A connections
-    {
-      id: "a-to-and",
-      source: "a-input",
-      target: "and-gate",
-      targetHandle: "a-in",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
-    {
-      id: "a-to-or",
-      source: "a-input",
-      target: "or-gate",
-      targetHandle: "a-in",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
-    {
-      id: "a-to-not",
-      source: "a-input",
-      target: "not-gate",
-      targetHandle: "a-in",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
-    {
-      id: "a-to-fa",
-      source: "a-input",
-      target: "full-adder",
-      targetHandle: "a-in",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
+    createEdge("a-to-and", "a-input", "and-gate", "a-in", colors.aColor),
+    createEdge("a-to-or", "a-input", "or-gate", "a-in", colors.aColor),
+    createEdge("a-to-not", "a-input", "not-gate", "a-in", colors.aColor),
+    createEdge("a-to-fa", "a-input", "full-adder", "a-in", colors.aColor),
 
     // Input B connections
-    {
-      id: "b-to-and",
-      source: "b-input",
-      target: "and-gate",
-      targetHandle: "b-in",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
-    {
-      id: "b-to-or",
-      source: "b-input",
-      target: "or-gate",
-      targetHandle: "b-in",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
-    {
-      id: "b-to-inverter",
-      source: "b-input",
-      target: "inverter",
-      targetHandle: "in",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
+    createEdge("b-to-and", "b-input", "and-gate", "b-in", colors.bColor),
+    createEdge("b-to-or", "b-input", "or-gate", "b-in", colors.bColor),
+    createEdge("b-to-inverter", "b-input", "inverter", "in", colors.bColor),
 
     // Full adder connections
-    {
-      id: "inverter-to-fa",
-      source: "inverter",
-      target: "full-adder",
-      targetHandle: "b-in",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
-    {
-      id: "carry-to-fa",
-      source: "carry-input",
-      target: "full-adder",
-      targetHandle: "carry-in",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
+    createEdge("inverter-to-fa", "inverter", "full-adder", "b-in", colors.bColor),
+    createEdge("carry-to-fa", "carry-input", "full-adder", "carry-in", colors.carryColor),
 
     // Multiplexer connections
-    {
-      id: "and-to-mux",
-      source: "and-gate",
-      target: "multiplexer",
-      targetHandle: "and-in",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
-    {
-      id: "or-to-mux",
-      source: "or-gate",
-      target: "multiplexer",
-      targetHandle: "or-in",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
-    {
-      id: "not-to-mux",
-      source: "not-gate",
-      target: "multiplexer",
-      targetHandle: "not-in",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
-    {
-      id: "fa-to-mux",
-      source: "full-adder",
-      target: "multiplexer",
-      targetHandle: "fa-in",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
+    createEdge("and-to-mux", "and-gate", "multiplexer", "and-in", colors.aColor),
+    createEdge("or-to-mux", "or-gate", "multiplexer", "or-in", colors.bColor),
+    createEdge("not-to-mux", "not-gate", "multiplexer", "not-in", colors.aColor),
+    createEdge("fa-to-mux", "full-adder", "multiplexer", "fa-in", colors.aColor),
 
     // Output connection
-    {
-      id: "mux-to-output",
-      source: "multiplexer",
-      target: "output",
-      animated: true,
-      type: "smoothstep",
-      markerEnd: { type: MarkerType.ArrowClosed },
-    },
+    createEdge("mux-to-output", "multiplexer", "output", null, "black"),
   ];
 }
