@@ -16,7 +16,7 @@
 ## Tech Stack
 
 - **Frontend**: HTML, CSS, Tailwind, React
-- **Backend/AI**: Python, Flask
+- **Backend**: Python with Flask framework
 - **Version Control**: GitHub
 
 ---
