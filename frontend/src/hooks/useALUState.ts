@@ -57,7 +57,7 @@ export function useALUState(
     const fullB = bInputs.join('');
     const select = code.join('');
 
-    fetch("/calculate/circuit2", { // paltan port depende san magrun back
+    fetch("/calculate/circuit", { // paltan port depende san magrun back
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -1,15 +1,14 @@
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
-from alu.alu1 import calculate_alu1
-from alu.alu2 import calculate_alu2
+from alu.alu import calculate_alu
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/calculate/circuit2', methods=['POST'])
-def calculate_circuit2():
+@app.route('/calculate/circuit', methods=['POST'])
+def calculate_circuit():
     data = request.json
-    alu_output = calculate_alu2(data)
+    alu_output = calculate_alu(data)
     
     if "error" in alu_output:
         return jsonify(alu_output), 400
