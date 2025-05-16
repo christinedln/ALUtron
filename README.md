@@ -13,7 +13,7 @@
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: HTML, CSS, Tailwind, React
 - **Backend/AI**: Python, Flask
