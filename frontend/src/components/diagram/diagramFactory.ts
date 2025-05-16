@@ -25,6 +25,7 @@ const LAYOUT = {
   },
 };
 
+// Node creation
 export function createNodes(state: {
   aInputs: number[];
   bInputs: number[];
@@ -60,13 +61,22 @@ export function createNodes(state: {
       id: "selector",
       type: "selector",
       position: { x: columns.multiplexer - 100, y: rows.controls },
-      data: { code, subtractMode, onToggle: toggleCode },
+      data: {
+        code,
+        subtractMode,
+        onToggle: toggleCode,
+        color: "bg-purple-500 text-white",
+      },
     },
     {
       id: "sub-op",
       type: "subOp",
       position: { x: columns.gates, y: rows.controls },
-      data: { bits: [subtractMode], onToggle: toggleSubtractMode },
+      data: {
+        bits: [subtractMode],
+        onToggle: toggleSubtractMode,
+        color: "bg-red-500 text-white",
+      },
     },
     {
       id: "operation-guide",
@@ -75,7 +85,7 @@ export function createNodes(state: {
         x: columns.multiplexer + columns.guideOffset,
         y: rows.controls,
       },
-      data: {},
+      data: { color: "bg-gray-300 text-black" },
     },
 
     // Input nodes
@@ -87,7 +97,7 @@ export function createNodes(state: {
         label: "A Inputs",
         bits: aInputs,
         onToggle: (index: number) => toggleBit("A", index),
-        color: "bg-blue-500",
+        color: "bg-blue-500 text-white",
       },
     },
     {
@@ -98,7 +108,7 @@ export function createNodes(state: {
         label: "B Inputs",
         bits: bInputs,
         onToggle: (index: number) => toggleBit("B", index),
-        color: "bg-green-500",
+        color: "bg-green-500 text-white",
       },
     },
     {
@@ -112,7 +122,7 @@ export function createNodes(state: {
         label: "Carry In",
         bits: [carryIn],
         onToggle: toggleCarryIn,
-        color: "bg-yellow-500",
+        color: "bg-yellow-500 text-black",
       },
     },
 
@@ -121,7 +131,7 @@ export function createNodes(state: {
       id: "and-gate",
       type: "andGate",
       position: { x: columns.gates, y: rows.gatesStart + offsets.and },
-      data: {},
+      data: { color: "bg-indigo-400 text-white" },
     },
     {
       id: "or-gate",
@@ -130,7 +140,7 @@ export function createNodes(state: {
         x: columns.gates - 30,
         y: rows.gatesStart + rows.gatesSpacing + offsets.or,
       },
-      data: {},
+      data: { color: "bg-pink-500 text-white" },
     },
     {
       id: "not-gate",
@@ -139,26 +149,17 @@ export function createNodes(state: {
         x: columns.gates - 20,
         y: rows.gatesStart + 2 * rows.gatesSpacing + offsets.not,
       },
-      data: {},
+      data: { color: "bg-teal-500 text-white" },
     },
     {
       id: "inverter",
       type: "inverter",
       position: {
         x: columns.gates,
-        y: rows.gatesStart + 3 * rows.gatesSpacing + 
-        offsets.and + offsets.or + offsets.not,
+        y: rows.gatesStart + 3 * rows.gatesSpacing +
+           offsets.and + offsets.or + offsets.not,
       },
-      data: {},
-    },
-    {
-      id: "half-adder",
-      type: "halfAdder",
-      position: {
-        x: columns.gates,
-        y: rows.gatesStart + 2 * rows.gatesSpacing + 70,
-      },
-      data: {},
+      data: { color: "bg-rose-400 text-white" },
     },
     {
       id: "full-adder",
@@ -167,7 +168,7 @@ export function createNodes(state: {
         x: columns.gates + 170,
         y: rows.gatesStart + 3 * rows.gatesSpacing + 70,
       },
-      data: {},
+      data: { color: "bg-amber-400 text-black" },
     },
 
     // Output processing nodes
@@ -178,7 +179,7 @@ export function createNodes(state: {
         x: columns.multiplexer,
         y: rows.gatesStart + 0.66 * rows.gatesSpacing,
       },
-      data: { code },
+      data: { code, color: "bg-cyan-500 text-white" },
     },
     {
       id: "output",
@@ -187,11 +188,12 @@ export function createNodes(state: {
         x: columns.output,
         y: rows.gatesStart + 0.75 * rows.gatesSpacing,
       },
-      data: { output, carry_out: carryOut },
+      data: { output, carry_out: carryOut, color: "bg-black text-white" },
     },
   ];
 }
 
+// Determine dynamic edge colors
 function getEdgeColor(state: {
   aInputs: number[];
   bInputs: number[];
@@ -201,33 +203,25 @@ function getEdgeColor(state: {
 }) {
   const { aInputs, bInputs, carryIn, subtractMode, code } = state;
 
-  // Determine colors based on inputs
-  const aColor = aInputs.some((bit) => bit === 1) ? "blue" : "gray"; // Blue if any A input is 1
-  const bColor = bInputs.some((bit) => bit === 1) ? "green" : "gray"; // Green if any B input is 1
-  const carryColor = carryIn === 1 ? "yellow" : "gray"; // Yellow if carry in is 1
-  const subtractColor = subtractMode === 1 ? "red" : "gray"; // Red if subtract mode is active
-
-  // Determine selector color based on code
-  let selectorColor = "gray"; // Default color
-  if (code[0] === 0 && code[1] === 0) {
-    selectorColor = "darkblue";
-  } else if (code[0] === 0 && code[1] === 1) {
-    selectorColor = "violet";
-  } else if (code[0] === 1 && code[1] === 0) {
-    selectorColor = "lightblue";
-  } else if (code[0] === 1 && code[1] === 1) {
-    selectorColor = subtractMode === 0 ? "lightgreen" : "lightcoral";
-  }
-
   return {
-    aColor,
-    bColor,
-    carryColor,
-    subtractColor,
-    selectorColor,
+    aColor: aInputs.some((bit) => bit === 1) ? "#3b82f6" : "#9ca3af",
+    bColor: bInputs.some((bit) => bit === 1) ? "#22c55e" : "#9ca3af",
+    carryColor: carryIn === 1 ? "#facc15" : "#9ca3af",
+    subtractColor: subtractMode === 1 ? "#ef4444" : "#9ca3af",
+    selectorColor:
+      code[0] === 0 && code[1] === 0
+        ? "#1e3a8a"
+        : code[0] === 0 && code[1] === 1
+        ? "#8b5cf6"
+        : code[0] === 1 && code[1] === 0
+        ? "#0ea5e9"
+        : subtractMode === 0
+        ? "#22c55e"
+        : "#f87171",
   };
 }
 
+// Edge creation
 export function createEdges(state: {
   aInputs: number[];
   bInputs: number[];
@@ -251,39 +245,30 @@ export function createEdges(state: {
     animated: true,
     type: "smoothstep",
     markerEnd: { type: MarkerType.ArrowClosed },
-    style: {
-      stroke,
-      strokeWidth: 2,
-    },
+    style: { stroke, strokeWidth: 3.5 },
   });
 
   return [
-    // Control connections
     createEdge("select-to-mux", "selector", "multiplexer", "select", colors.selectorColor),
     createEdge("sub-to-inverter", "sub-op", "inverter", null, colors.subtractColor),
 
-    // Input A connections
     createEdge("a-to-and", "a-input", "and-gate", "a-in", colors.aColor),
     createEdge("a-to-or", "a-input", "or-gate", "a-in", colors.aColor),
     createEdge("a-to-not", "a-input", "not-gate", "a-in", colors.aColor),
     createEdge("a-to-fa", "a-input", "full-adder", "a-in", colors.aColor),
 
-    // Input B connections
     createEdge("b-to-and", "b-input", "and-gate", "b-in", colors.bColor),
     createEdge("b-to-or", "b-input", "or-gate", "b-in", colors.bColor),
     createEdge("b-to-inverter", "b-input", "inverter", "in", colors.bColor),
 
-    // Full adder connections
     createEdge("inverter-to-fa", "inverter", "full-adder", "b-in", colors.bColor),
     createEdge("carry-to-fa", "carry-input", "full-adder", "carry-in", colors.carryColor),
 
-    // Multiplexer connections
     createEdge("and-to-mux", "and-gate", "multiplexer", "and-in", colors.aColor),
     createEdge("or-to-mux", "or-gate", "multiplexer", "or-in", colors.bColor),
     createEdge("not-to-mux", "not-gate", "multiplexer", "not-in", colors.aColor),
     createEdge("fa-to-mux", "full-adder", "multiplexer", "fa-in", colors.aColor),
 
-    // Output connection
-    createEdge("mux-to-output", "multiplexer", "output", null, "black"),
+    createEdge("mux-to-output", "multiplexer", "output", null, "#000000"),
   ];
 }

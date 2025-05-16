@@ -19,8 +19,7 @@ const ALUHeader: React.FC = () => (
 
         <div>
           <h1 className="text-2xl font-extrabold tracking-wide">
-            ALUtron <span className="text-yellow-300">-</span> 4-bit ALU
-            Simulator
+            ALUtron <span className="text-yellow-300"></span>
           </h1>
           <div className="h-1 w-24 bg-yellow-300 rounded mt-1"></div>
         </div>
